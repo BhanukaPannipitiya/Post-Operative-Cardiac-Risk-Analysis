@@ -1,0 +1,50 @@
+# Simple single-container Dockerfile
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    nginx \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js for frontend build
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Set working directory
+WORKDIR /app
+
+# Copy backend requirements and install Python dependencies
+COPY backend/app/requirements.txt ./backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt
+
+# Copy backend code
+COPY backend/ ./backend/
+
+# Copy frontend package files and install dependencies
+COPY frontend/package*.json ./frontend/
+WORKDIR /app/frontend
+RUN npm install
+
+# Copy frontend source and build
+COPY frontend/ .
+RUN npm run build
+
+# Copy nginx configuration
+COPY frontend/nginx.conf /etc/nginx/sites-available/default
+RUN rm /etc/nginx/sites-enabled/default && \
+    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+# Create startup script
+WORKDIR /app
+RUN echo '#!/bin/bash' > /start.sh && \
+    echo 'nginx &' >> /start.sh && \
+    echo 'cd /app/backend && uvicorn app.app:app --host 0.0.0.0 --port 8000' >> /start.sh && \
+    chmod +x /start.sh
+
+# Expose ports
+EXPOSE 80 8000
+
+# Start both services
+CMD ["/start.sh"]
