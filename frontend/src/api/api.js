@@ -18,18 +18,10 @@ const getApiUrl = () => {
     return 'http://localhost:8000/predict';
   }
   
-  // Production environment - smart URL construction
-  if (currentHost.includes('onrender.com')) {
-    const serviceName = currentHost.split('.')[0];
-    const backendUrl = `https://${serviceName}-backend.onrender.com/predict`;
-    console.log('🚀 Production mode: Auto-detected backend URL:', backendUrl);
-    return backendUrl;
-  }
-  
-  // Fallback for other domains
-  const fallbackUrl = `https://cardiac-ai-backend.onrender.com/predict`;
-  console.log('⚠️ Using fallback backend URL:', fallbackUrl);
-  return fallbackUrl;
+  // Production environment - use relative URL for Docker setup
+  // This will work with nginx proxy configuration
+  console.log('🐳 Docker mode: Using relative API URL');
+  return '/api/predict';
 };
 
 // Cache the API URL to avoid recalculating on every request
