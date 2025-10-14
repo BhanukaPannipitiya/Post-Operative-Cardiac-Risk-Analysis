@@ -8,10 +8,12 @@
 !.gitignore
 !app/
 !utils/
+!models/
 
-# Allow all files inside app/ and utils/ directories
+# Allow all files inside app/, utils/, and models/ directories
 !app/**
 !utils/**
+!models/**
 
 # But ignore Python cache files
 __pycache__/
