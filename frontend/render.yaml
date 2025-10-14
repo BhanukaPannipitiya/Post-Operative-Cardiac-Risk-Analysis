@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: cardiac-ai-frontend
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    # No need for REACT_APP_API_URL - auto-detection handles this!

@@ -6,7 +6,7 @@ import joblib
 import numpy as np
 import os
 
-from backend.utils.preprocessing import prepare_features
+from utils.preprocessing import prepare_features
 
 
 # --------------------------------------------------
@@ -21,7 +21,7 @@ app = FastAPI(
 # Allow frontend requests (React)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # change to your frontend URL in production
+    allow_origins=["*"],  # TODO: restrict to your frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
