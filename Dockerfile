@@ -1,7 +1,7 @@
-# Ultra-simple Dockerfile for Cardiac AI
-FROM python:3.11-slim
+# Multi-stage Dockerfile for Cardiac AI
+FROM python:3.11-slim as base
 
-# Install system dependencies including Node.js and nginx
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     curl \
@@ -20,16 +20,26 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend code
 COPY backend/ ./backend/
 
-# Install and build frontend
-COPY frontend/package.json ./frontend/
-COPY frontend/package-lock.json ./frontend/
+# Frontend build stage
+FROM base as frontend-builder
 WORKDIR /app/frontend
+
+# Copy package files
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
+
+# Copy frontend source and build
 COPY frontend/ .
 RUN npm run build
 
-# Configure nginx
+# Final stage
+FROM base
 WORKDIR /app
+
+# Copy built frontend from builder stage
+COPY --from=frontend-builder /app/frontend/build ./frontend/build
+
+# Configure nginx
 RUN echo 'server {' > /etc/nginx/sites-available/default && \
     echo '    listen 80;' >> /etc/nginx/sites-available/default && \
     echo '    root /app/frontend/build;' >> /etc/nginx/sites-available/default && \
