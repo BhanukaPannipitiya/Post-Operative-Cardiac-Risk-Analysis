@@ -14,6 +14,10 @@ yarn-error.log*
 !package.json
 !package-lock.json
 
+# Keep public directory (needed for React builds)
+!public/
+!public/*
+
 # Production build
 build/
 dist/
