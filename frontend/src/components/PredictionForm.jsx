@@ -71,8 +71,20 @@ export default function PredictionForm({ onResults }) {
     setCurrentStep(0);
   };
 
-  const nextStep = () => currentStep < steps.length - 1 && setCurrentStep(currentStep + 1);
-  const prevStep = () => currentStep > 0 && setCurrentStep(currentStep - 1);
+  const nextStep = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+  const prevStep = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
   // Helper function for input interactions
   const getInputProps = () => ({
