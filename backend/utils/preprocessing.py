@@ -14,7 +14,7 @@ def prepare_features(input_data, scaler_labs, scaler_text, scaler_bio):
         "Creatine Kinase, MB Isoenzyme","INR(PT)","PT","Potassium","Sodium","Troponin T"
     ]
     text_dim = 50
-    bio_dim = 189
+    bio_dim = 189  # Model expects 189 biobert features (0-188)
 
     # --- LAB FEATURES ---
     labs_df = pd.DataFrame([input_data.labs])
@@ -39,5 +39,20 @@ def prepare_features(input_data, scaler_labs, scaler_text, scaler_bio):
     bio_scaled = scaler_bio.transform(bio_vec)
 
     # --- COMBINE ---
-    X = np.concatenate([labs_scaled, text_scaled, bio_scaled], axis=1)
+    # Order: labs (10) + text (50) + biobert (189) = 249
+    # But model expects 259, so we need 10 more features
+    # These are likely the missing value indicators
+    missing_indicators = []
+    for col in lab_cols:
+        if col in input_data.labs:
+            # 1 if value is missing/NaN, 0 if present
+            missing_indicators.append(1 if pd.isna(input_data.labs[col]) or input_data.labs[col] == "" else 0)
+        else:
+            missing_indicators.append(1)  # Missing if not provided
+    
+    missing_array = np.array(missing_indicators).reshape(1, -1)
+    
+    # Combine: labs + missing indicators + text + biobert
+    X = np.concatenate([labs_scaled, missing_array, text_scaled, bio_scaled], axis=1)
+    
     return X

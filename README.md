@@ -18,12 +18,18 @@ The platform follows a modern full-stack architecture with clear separation of c
 
 ## 🚀 Quick Start
 
+### Live Application
+🌐 **Live Demo**: [https://post-operative-cardiac-risk-analysis.onrender.com/](https://post-operative-cardiac-risk-analysis.onrender.com/)
+
 ### Prerequisites
 - Python 3.8+
 - Node.js 16+
 - npm or yarn
+- Docker (optional, for containerized deployment)
 
-### Backend Setup
+### Local Development Setup
+
+#### Backend Setup
 ```bash
 cd backend
 python -m venv venv
@@ -33,7 +39,7 @@ cd app
 uvicorn app:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Frontend Setup
+#### Frontend Setup
 ```bash
 cd frontend
 npm install
@@ -43,6 +49,15 @@ npm start
 The application will be available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
+
+### Docker Deployment
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+
+# Or run individual services
+docker-compose up backend frontend
+```
 
 ## 📊 Data Processing Pipeline
 
@@ -311,15 +326,19 @@ const getRiskLevel = (confidence) => {
 ## 📁 Project Structure
 
 ```
-Project/
+CardioRisk-AI/
 ├── backend/
 │   ├── app/
 │   │   ├── app.py                 # FastAPI application
 │   │   └── requirements.txt       # Python dependencies
 │   ├── data/                      # Raw datasets
+│   │   ├── *.csv                 # Heart diagnosis datasets
+│   │   ├── RAG_data/             # RAG training data
+│   │   └── README.md             # Data documentation
 │   ├── data_preprocessed/         # Processed features & models
 │   │   ├── *.pkl                 # Preprocessing artifacts
 │   │   ├── *.csv                 # Processed datasets
+│   │   ├── figures/              # Analysis visualizations
 │   │   └── shap_outputs/         # Model explainability
 │   ├── models/                   # Trained models
 │   │   ├── xgb_final_full_model.joblib
@@ -327,17 +346,42 @@ Project/
 │   │   ├── scaler_text.joblib
 │   │   └── scaler_biobert.joblib
 │   ├── Notebooks/                # Jupyter analysis notebooks
-│   └── utils/
-│       └── preprocessing.py      # Feature preparation
-└── frontend/
-    ├── src/
-    │   ├── components/
-    │   │   ├── PredictionForm.jsx
-    │   │   └── PredictionResult.jsx
-    │   ├── api/
-    │   │   └── api.js            # API client
-    │   └── App.js                # Main application
-    └── package.json              # Node.js dependencies
+│   │   ├── *.ipynb               # Analysis notebooks
+│   │   └── *.html                # Exported notebook reports
+│   ├── utils/
+│   │   └── preprocessing.py      # Feature preparation
+│   ├── Dockerfile                # Backend container config
+│   ├── Procfile                  # Render deployment config
+│   └── render.yaml               # Render service config
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── PredictionForm.jsx
+│   │   │   └── PredictionResult.jsx
+│   │   ├── api/
+│   │   │   ├── api.js            # Main API client
+│   │   │   ├── api-advanced.js   # Advanced API functions
+│   │   │   └── api-test.js       # API testing utilities
+│   │   ├── App.js                # Main application
+│   │   ├── App.css               # Application styles
+│   │   └── index.js              # React entry point
+│   ├── public/                   # Static assets
+│   ├── build/                    # Production build
+│   ├── Dockerfile                # Frontend container config
+│   ├── nginx.conf                # Nginx configuration
+│   ├── package.json              # Node.js dependencies
+│   └── render.yaml               # Render service config
+├── docker-compose.yml            # Development Docker setup
+├── docker-compose.prod.yml       # Production Docker setup
+├── Dockerfile                    # Root container config
+├── Dockerfile.simple             # Simplified container config
+├── Dockerfile.ultra-simple       # Minimal container config
+├── deploy-to-render.sh           # Render deployment script
+├── test-docker-build.sh         # Docker build testing
+├── DOCKER_DEPLOYMENT.md          # Docker deployment guide
+├── RENDER_DEPLOYMENT.md          # Render deployment guide
+├── GITIGNORE_SETUP.md            # Git configuration guide
+└── README.md                     # This file
 ```
 
 ## 🔬 Model Performance
@@ -362,25 +406,122 @@ The system achieves robust performance through:
 - **Input Validation**: Comprehensive error handling and validation
 - **CORS Configuration**: Controlled cross-origin resource sharing
 
-## 🚀 Deployment Considerations
+## 🚀 Deployment
 
-### Production Setup
-1. **Environment Variables**: Configure API URLs and model paths
-2. **Model Serving**: Consider model versioning and A/B testing
-3. **Monitoring**: Implement logging and performance metrics
-4. **Scaling**: Use container orchestration (Docker/Kubernetes)
-5. **Security**: Implement authentication and rate limiting
+### Live Application
+🌐 **Production URL**: [https://post-operative-cardiac-risk-analysis.onrender.com/](https://post-operative-cardiac-risk-analysis.onrender.com/)
 
-### Docker Deployment
-```dockerfile
-# Backend Dockerfile example
-FROM python:3.9-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+### Deployment Options
+
+#### 1. Render.com Deployment (Current Production)
+The application is currently deployed on Render.com with the following configuration:
+
+**Backend Service**:
+- **Platform**: Render Web Service
+- **Build Command**: `pip install -r app/requirements.txt`
+- **Start Command**: `uvicorn app:app --host 0.0.0.0 --port $PORT`
+- **Environment**: Python 3.9
+- **Auto-deploy**: Enabled from main branch
+
+**Frontend Service**:
+- **Platform**: Render Static Site
+- **Build Command**: `npm install && npm run build`
+- **Publish Directory**: `build`
+- **Node Version**: 16.x
+
+**Configuration Files**:
+- `backend/render.yaml` - Backend service configuration
+- `frontend/render.yaml` - Frontend service configuration
+- `backend/Procfile` - Process configuration for Render
+
+#### 2. Docker Deployment
+
+**Development Environment**:
+```bash
+# Using Docker Compose for development
+docker-compose up --build
+
+# Individual services
+docker-compose up backend    # Backend only
+docker-compose up frontend  # Frontend only
 ```
+
+**Production Environment**:
+```bash
+# Production Docker Compose
+docker-compose -f docker-compose.prod.yml up --build
+```
+
+**Available Docker Configurations**:
+- `Dockerfile` - Root container (full application)
+- `Dockerfile.simple` - Simplified container
+- `Dockerfile.ultra-simple` - Minimal container
+- `backend/Dockerfile` - Backend-specific container
+- `frontend/Dockerfile` - Frontend-specific container
+
+#### 3. Manual Deployment Scripts
+
+**Render Deployment**:
+```bash
+# Automated deployment to Render
+./deploy-to-render.sh
+```
+
+**Docker Build Testing**:
+```bash
+# Test Docker builds
+./test-docker-build.sh
+```
+
+### Environment Configuration
+
+#### Backend Environment Variables
+```bash
+# Required for production
+PORT=8000
+PYTHONPATH=/app
+
+# Optional configurations
+LOG_LEVEL=info
+CORS_ORIGINS=https://post-operative-cardiac-risk-analysis.onrender.com
+```
+
+#### Frontend Environment Variables
+```bash
+# API Configuration
+REACT_APP_API_URL=https://your-backend-url.onrender.com
+REACT_APP_ENVIRONMENT=production
+```
+
+### Deployment Considerations
+
+#### Production Setup
+1. **Environment Variables**: Configure API URLs and model paths
+2. **Model Serving**: Pre-trained models loaded at startup
+3. **Monitoring**: Built-in health checks and error handling
+4. **Scaling**: Horizontal scaling supported via Render
+5. **Security**: CORS configured for production domains
+
+#### Performance Optimization
+- **Model Loading**: Models cached in memory for fast inference
+- **Static Assets**: Frontend served via CDN on Render
+- **API Response**: Optimized JSON responses with compression
+- **Error Handling**: Comprehensive error handling and logging
+
+#### Health Monitoring
+- **Health Check**: `GET /` endpoint returns service status
+- **Model Status**: Automatic model loading verification
+- **Error Tracking**: Detailed error responses for debugging
+
+### Deployment Documentation
+
+The project includes comprehensive deployment guides:
+
+- **`DOCKER_DEPLOYMENT.md`** - Complete Docker deployment guide
+- **`RENDER_DEPLOYMENT.md`** - Render.com deployment instructions
+- **`GITIGNORE_SETUP.md`** - Git configuration and best practices
+
+These guides provide step-by-step instructions for different deployment scenarios and environments.
 
 ## 📚 Dependencies
 
@@ -425,7 +566,7 @@ xgboost>=2.1.1
 
 ### API Request Example
 ```bash
-curl -X POST "http://localhost:8000/predict" \
+curl -X POST "https://post-operative-cardiac-risk-analysis.onrender.com/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "labs": {
